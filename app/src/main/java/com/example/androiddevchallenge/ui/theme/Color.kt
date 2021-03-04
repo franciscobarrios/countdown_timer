@@ -21,3 +21,10 @@ val purple200 = Color(0xFFBB86FC)
 val purple500 = Color(0xFF6200EE)
 val purple700 = Color(0xFF3700B3)
 val teal200 = Color(0xFF03DAC5)
+
+
+val numPadColorNumber = Color(0xFFFFFFFF)
+val backgroundColor = Color(0xFFFFFFFF)
+val transparentColor = Color(0x00000000)
+val counterTextLightTheme = Color(0xFF333333)
+val counterTextDarkTheme = Color(0xFFAAAAAA)
