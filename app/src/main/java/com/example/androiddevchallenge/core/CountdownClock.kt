@@ -1,6 +1,6 @@
 package com.example.androiddevchallenge.core
 
-import com.example.androiddevchallenge.ui.view.NO_TIME
+import com.example.androiddevchallenge.data.NO_TIME
 
 data class CountDown(
 	val hours: String? = NO_TIME,
