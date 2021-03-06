@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.Backspace
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -19,7 +20,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.androiddevchallenge.ui.core.CountDown
+import com.example.androiddevchallenge.core.CountDown
 import com.example.androiddevchallenge.ui.theme.*
 
 const val TAG = " >>>>>>>>> mainView"
@@ -27,8 +28,27 @@ const val NO_TIME = "00"
 const val TIME_SEPARATOR = ":"
 
 @Composable
-fun MainView() {
-	
+fun MyApp(
+	showFab: MutableState<Boolean>
+) {
+	Scaffold(
+		content = {
+			MainView(
+				showFab = {
+					Log.d(TAG, "MyApp: $it ")
+					showFab.value = it
+				},
+			)
+		},
+		floatingActionButton = { Fab(showFab.value) },
+		floatingActionButtonPosition = FabPosition.Center,
+	)
+}
+
+@Composable
+fun MainView(
+	showFab: (Boolean) -> Unit,
+) {
 	val counter = remember { mutableStateOf("") }
 	
 	Column(
@@ -43,8 +63,8 @@ fun MainView() {
 			horizontalArrangement = Arrangement.Center,
 			verticalAlignment = Alignment.CenterVertically
 		) {
-			//val time = calculateTime(counter.value)
 			val time = calculateNotFormatTime(counter.value)
+			showFab(counter.value.isNotEmpty())
 			TimeIndicator(
 				hours = time.hours,
 				minutes = time.minutes,
@@ -71,12 +91,13 @@ fun MainView() {
 	}
 }
 
-
 @Composable
 fun Fab(visible: Boolean) {
 	if (visible) {
 		FloatingActionButton(
-			onClick = {}
+			onClick = {
+				//start timer
+			},
 		) {
 			Icon(
 				imageVector = Icons.Default.PlayArrow,
@@ -132,39 +153,28 @@ fun calculateNotFormatTime(time: String): CountDown {
 				when (time.toInt()) {
 					in 0..99 -> {
 						seconds = time.toInt()
-						Log.d(TAG, "seconds: $seconds")
 					}
 					in 100..999 -> {
 						minutes = time.subSequence(0, 1).toString().toInt()
 						seconds = time.subSequence(1, 3).toString().toInt()
-						Log.d(TAG, "minutes: $minutes")
-						Log.d(TAG, "seconds: $seconds")
 					}
 					in 1000..9999 -> {
 						minutes = time.subSequence(0, 2).toString().toInt()
 						seconds = time.subSequence(2, 4).toString().toInt()
-						Log.d(TAG, "minutes: $minutes")
-						Log.d(TAG, "seconds: $seconds")
 					}
 					in 10000..99999 -> {
 						hours = time.subSequence(0, 1).toString().toInt()
 						minutes = time.subSequence(1, 3).toString().toInt()
 						seconds = time.subSequence(3, 5).toString().toInt()
-						Log.d(TAG, "hours: $hours")
-						Log.d(TAG, "minutes: $minutes")
-						Log.d(TAG, "seconds: $seconds")
 					}
 					in 100000..1000000 -> {
 						hours = time.subSequence(0, 2).toString().toInt()
 						minutes = time.subSequence(2, 4).toString().toInt()
 						seconds = time.subSequence(4, 6).toString().toInt()
-						Log.d(TAG, "hours: $hours")
-						Log.d(TAG, "minutes: $minutes")
-						Log.d(TAG, "seconds: $seconds")
 					}
 				}
 				
-				Log.d(TAG, "hours: $hours, minutes: $minutes, seconds: $seconds ")
+				//Log.d(TAG, "hours: $hours, minutes: $minutes, seconds: $seconds ")
 				
 				val strHours: String = if (hours < 10) "0$hours" else hours.toString()
 				val strMinutes: String = if (minutes < 10) "0$minutes" else minutes.toString()
@@ -222,9 +232,6 @@ fun TimeIndicator(
 	minutes: String?,
 	seconds: String?
 ) {
-	
-	Log.d(TAG, "timeIndicator: $hours")
-	
 	Column(
 		verticalArrangement = Arrangement.Center,
 		horizontalAlignment = Alignment.CenterHorizontally
@@ -286,28 +293,19 @@ fun PadIconButton(
 	onClick: () -> Unit,
 	enabled: Boolean = false
 ) {
-	if (enabled) {
-		IconButton(
-			onClick = onClick,
-			enabled = enabled
-		) {
-			Icon(
-				imageVector = Icons.Outlined.Backspace,
-				contentDescription = "Delete timer",
-				tint = if (isSystemInDarkTheme()) Color.White else Color.DarkGray
-			)
-		}
-	} else {
-		IconButton(
-			onClick = onClick,
-			enabled = enabled
-		) {
-			Icon(
-				imageVector = Icons.Outlined.Backspace,
-				contentDescription = "Delete timer",
-				tint = if (isSystemInDarkTheme()) Color.DarkGray else Color.LightGray
-			)
-		}
+	IconButton(
+		onClick = onClick,
+		enabled = enabled
+	) {
+		Icon(
+			imageVector = Icons.Outlined.Backspace,
+			contentDescription = "Delete timer",
+			tint = if (enabled) {
+				if (isSystemInDarkTheme()) Color.White else Color.DarkGray
+			} else {
+				if (isSystemInDarkTheme()) Color.DarkGray else Color.LightGray
+			},
+		)
 	}
 }
 
@@ -315,7 +313,7 @@ fun PadIconButton(
 fun NumPad(
 	onClick: (String) -> Unit,
 	onBackspace: () -> Unit,
-	timeStringLength: Int
+	timeStringLength: Int,
 ) {
 	Column(modifier = Modifier.padding(medium)) {
 		Row(

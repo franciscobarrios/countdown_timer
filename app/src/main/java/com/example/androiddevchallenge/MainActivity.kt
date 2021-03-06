@@ -18,30 +18,21 @@ package com.example.androiddevchallenge
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.material.FabPosition
-import androidx.compose.material.Scaffold
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import com.example.androiddevchallenge.ui.theme.MyTheme
-import com.example.androiddevchallenge.ui.view.fab
-import com.example.androiddevchallenge.ui.view.mainView
+import com.example.androiddevchallenge.ui.view.MyApp
 
 class MainActivity : AppCompatActivity() {
+	
+	private val showFab: MutableState<Boolean> = mutableStateOf(false)
+	
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		setContent {
 			MyTheme {
-				MyApp()
+				MyApp(showFab)
 			}
 		}
 	}
-}
-
-// Start building your app here!
-@Composable
-fun MyApp() {
-	Scaffold(
-		content = { mainView() },
-		floatingActionButton = { fab(false) },
-		floatingActionButtonPosition = FabPosition.Center,
-	)
 }

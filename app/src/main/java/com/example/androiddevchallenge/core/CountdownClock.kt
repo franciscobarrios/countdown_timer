@@ -1,4 +1,4 @@
-package com.example.androiddevchallenge.ui.core
+package com.example.androiddevchallenge.core
 
 import com.example.androiddevchallenge.ui.view.NO_TIME
 
