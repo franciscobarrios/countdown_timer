@@ -20,8 +20,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -32,18 +30,23 @@ import com.example.androiddevchallenge.ui.theme.*
 @ExperimentalAnimationApi
 @Composable
 fun MyApp(
-	showFab: MutableState<Boolean>
+	numPadVisibility: MutableState<Boolean>,
+	fabVisibility: MutableState<Boolean>,
 ) {
 	Scaffold(
 		content = {
 			MainView(
-				showFab = {
-					Log.d(TAG, "MyApp: $it ")
-					showFab.value = it
-				},
+				showFab = { fabVisibility.value = it },
+				showNumPad = numPadVisibility,
 			)
 		},
-		floatingActionButton = { Fab(showFab) },
+		floatingActionButton = {
+			Fab(
+				fabVisibility = fabVisibility,
+				onClick = { numPadVisibility.value = it },
+				numPadVisibility = numPadVisibility,
+			)
+		},
 		floatingActionButtonPosition = FabPosition.Center,
 	)
 }
@@ -51,15 +54,16 @@ fun MyApp(
 @ExperimentalAnimationApi
 @Composable
 fun MainView(
+	showNumPad: MutableState<Boolean>,
 	showFab: (Boolean) -> Unit,
 ) {
 	val counter = remember { mutableStateOf("") }
-	
 	Column(
 		modifier = Modifier
 			.fillMaxSize()
 			.padding(12.dp)
 	) {
+		//Timer
 		Row(
 			modifier = Modifier
 				.fillMaxWidth()
@@ -75,6 +79,7 @@ fun MainView(
 				seconds = time.seconds
 			)
 		}
+		//NumPad
 		Row(
 			modifier = Modifier
 				.fillMaxWidth()
@@ -82,14 +87,17 @@ fun MainView(
 			horizontalArrangement = Arrangement.Center,
 		) {
 			NumPad(
-				onClick = { counter.value += it },
+				onClick = {
+					counter.value += it
+				},
 				onBackspace = {
 					if (counter.value.isNotEmpty()) {
 						counter.value =
 							counter.value.subSequence(0, counter.value.length - 1).toString()
 					}
 				},
-				timeStringLength = counter.value.length
+				timeStringLength = counter.value.length,
+				visible = showNumPad.value
 			)
 		}
 	}
@@ -97,9 +105,13 @@ fun MainView(
 
 @ExperimentalAnimationApi
 @Composable
-fun Fab(visible: MutableState<Boolean>) {
+fun Fab(
+	fabVisibility: MutableState<Boolean>,
+	numPadVisibility: MutableState<Boolean>,
+	onClick: (Boolean) -> Unit
+) {
 	AnimatedVisibility(
-		visible = visible.value,
+		visible = fabVisibility.value,
 		enter = expandIn(
 			expandFrom = Alignment.Center,
 			initialSize = {
@@ -118,9 +130,7 @@ fun Fab(visible: MutableState<Boolean>) {
 		initiallyVisible = false,
 	) {
 		FloatingActionButton(
-			onClick = {
-				//start timer
-			},
+			onClick = { onClick(!numPadVisibility.value) },
 		) {
 			Icon(
 				imageVector = Icons.Default.PlayArrow,
@@ -136,7 +146,6 @@ fun TextNumberIndicator(text: String) {
 	Text(
 		text = text,
 		fontSize = textNumberIndicator,
-		fontFamily = FontFamily.Default,
 		textAlign = TextAlign.Center,
 		modifier = Modifier.padding(smaller_4),
 		color = if (isSystemInDarkTheme()) counterTextDarkTheme else counterTextLightTheme
@@ -148,8 +157,6 @@ fun TextNumberSeparator(text: String) {
 	Text(
 		text = text,
 		fontSize = textNumberSeparator,
-		fontFamily = FontFamily.Monospace,
-		fontStyle = FontStyle.Normal,
 		textAlign = TextAlign.Center,
 		modifier = Modifier.padding(smaller_4),
 		color = if (isSystemInDarkTheme()) counterTextDarkTheme else counterTextLightTheme
@@ -276,7 +283,7 @@ fun TimeIndicator(
 		IndicatorDescription("minutes")
 	}
 	Column(
-		verticalArrangement = Arrangement.Center,
+		verticalArrangement = Arrangement.Top,
 		horizontalAlignment = Alignment.CenterHorizontally
 	) {
 		TextNumberSeparator(text = TIME_SEPARATOR)
@@ -345,156 +352,157 @@ fun NumPad(
 	onClick: (String) -> Unit,
 	onBackspace: () -> Unit,
 	timeStringLength: Int,
+	visible: Boolean
 ) {
-	Column(modifier = Modifier.padding(medium_8)) {
-		Row(
-			modifier = Modifier.padding(
-				start = large_12,
-				top = smaller_4,
-				end = large_12,
-				bottom = smaller_4
-			)
-		) {
-			PadButton(
-				text = NUM_PAD_1,
-				onClick = { onClick(NUM_PAD_1) },
-			)
+	if (visible) {
+		Column(modifier = Modifier.padding(medium_8)) {
+			Row(
+				modifier = Modifier.padding(
+					start = large_12,
+					top = smaller_4,
+					end = large_12,
+					bottom = smaller_4
+				)
+			) {
+				PadButton(
+					text = NUM_PAD_1,
+					onClick = { onClick(NUM_PAD_1) },
+				)
+			}
+			Row(
+				modifier = Modifier.padding(
+					start = large_12,
+					top = smaller_4,
+					end = large_12,
+					bottom = smaller_4
+				)
+			) {
+				PadButton(
+					text = NUM_PAD_4,
+					onClick = { onClick(NUM_PAD_4) },
+				)
+			}
+			Row(
+				modifier = Modifier.padding(
+					start = large_12,
+					top = smaller_4,
+					end = large_12,
+					bottom = smaller_4
+				)
+			) {
+				PadButton(
+					text = NUM_PAD_7,
+					onClick = { onClick(NUM_PAD_7) },
+				)
+			}
 		}
-		Row(
-			modifier = Modifier.padding(
-				start = large_12,
-				top = smaller_4,
-				end = large_12,
-				bottom = smaller_4
-			)
-		) {
-			PadButton(
-				text = NUM_PAD_4,
-				onClick = { onClick(NUM_PAD_4) },
-			)
+		Column(modifier = Modifier.padding(medium_8)) {
+			Row(
+				modifier = Modifier.padding(
+					start = large_12,
+					top = smaller_4,
+					end = large_12,
+					bottom = smaller_4
+				)
+			) {
+				PadButton(
+					text = NUM_PAD_2,
+					onClick = { onClick(NUM_PAD_2) },
+				)
+			}
+			Row(
+				modifier = Modifier.padding(
+					start = large_12,
+					top = smaller_4,
+					end = large_12,
+					bottom = smaller_4
+				)
+			) {
+				PadButton(
+					text = NUM_PAD_5,
+					onClick = { onClick(NUM_PAD_5) },
+				)
+			}
+			Row(
+				modifier = Modifier.padding(
+					start = large_12,
+					top = smaller_4,
+					end = large_12,
+					bottom = smaller_4
+				)
+			) {
+				PadButton(
+					text = NUM_PAD_8,
+					onClick = { onClick(NUM_PAD_8) },
+				)
+			}
+			Row(
+				modifier = Modifier.padding(
+					start = large_12,
+					top = smaller_4,
+					end = large_12,
+					bottom = smaller_4
+				)
+			) {
+				PadButton(
+					text = NUM_PAD_0,
+					onClick = { onClick(NUM_PAD_0) },
+				)
+			}
 		}
-		Row(
-			modifier = Modifier.padding(
-				start = large_12,
-				top = smaller_4,
-				end = large_12,
-				bottom = smaller_4
-			)
-		) {
-			PadButton(
-				text = NUM_PAD_7,
-				onClick = { onClick(NUM_PAD_7) },
-			)
-		}
-	}
-	Column(
-		modifier = Modifier.padding(medium_8)
-	) {
-		Row(
-			modifier = Modifier.padding(
-				start = large_12,
-				top = smaller_4,
-				end = large_12,
-				bottom = smaller_4
-			)
-		) {
-			PadButton(
-				text = NUM_PAD_2,
-				onClick = { onClick(NUM_PAD_2) },
-			)
-		}
-		Row(
-			modifier = Modifier.padding(
-				start = large_12,
-				top = smaller_4,
-				end = large_12,
-				bottom = smaller_4
-			)
-		) {
-			PadButton(
-				text = NUM_PAD_5,
-				onClick = { onClick(NUM_PAD_5) },
-			)
-		}
-		Row(
-			modifier = Modifier.padding(
-				start = large_12,
-				top = smaller_4,
-				end = large_12,
-				bottom = smaller_4
-			)
-		) {
-			PadButton(
-				text = NUM_PAD_8,
-				onClick = { onClick(NUM_PAD_8) },
-			)
-		}
-		Row(
-			modifier = Modifier.padding(
-				start = large_12,
-				top = smaller_4,
-				end = large_12,
-				bottom = smaller_4
-			)
-		) {
-			PadButton(
-				text = NUM_PAD_0,
-				onClick = { onClick(NUM_PAD_0) },
-			)
-		}
-	}
-	Column(modifier = Modifier.padding(medium_8)) {
-		Row(
-			modifier = Modifier.padding(
-				start = large_12,
-				top = smaller_4,
-				end = large_12,
-				bottom = smaller_4
-			)
-		) {
-			PadButton(
-				text = NUM_PAD_3,
-				onClick = { onClick(NUM_PAD_3) },
-			)
-		}
-		Row(
-			modifier = Modifier.padding(
-				start = large_12,
-				top = smaller_4,
-				end = large_12,
-				bottom = smaller_4
-			)
-		) {
-			PadButton(
-				text = NUM_PAD_6,
-				onClick = { onClick(NUM_PAD_6) },
-			)
-		}
-		Row(
-			modifier = Modifier.padding(
-				start = large_12,
-				top = smaller_4,
-				end = large_12,
-				bottom = smaller_4
-			)
-		) {
-			PadButton(
-				text = NUM_PAD_9,
-				onClick = { onClick(NUM_PAD_9) },
-			)
-		}
-		Row(
-			modifier = Modifier.padding(
-				start = 22.dp,
-				top = larger_16,
-				end = larger_16,
-				bottom = larger_16
-			),
-		) {
-			PadIconButton(
-				onClick = { onBackspace() },
-				enabled = timeStringLength > 0
-			)
+		Column(modifier = Modifier.padding(medium_8)) {
+			Row(
+				modifier = Modifier.padding(
+					start = large_12,
+					top = smaller_4,
+					end = large_12,
+					bottom = smaller_4
+				)
+			) {
+				PadButton(
+					text = NUM_PAD_3,
+					onClick = { onClick(NUM_PAD_3) },
+				)
+			}
+			Row(
+				modifier = Modifier.padding(
+					start = large_12,
+					top = smaller_4,
+					end = large_12,
+					bottom = smaller_4
+				)
+			) {
+				PadButton(
+					text = NUM_PAD_6,
+					onClick = { onClick(NUM_PAD_6) },
+				)
+			}
+			Row(
+				modifier = Modifier.padding(
+					start = large_12,
+					top = smaller_4,
+					end = large_12,
+					bottom = smaller_4
+				)
+			) {
+				PadButton(
+					text = NUM_PAD_9,
+					onClick = { onClick(NUM_PAD_9) },
+				)
+			}
+			Row(
+				modifier = Modifier.padding(
+					start = 22.dp,
+					top = larger_16,
+					end = larger_16,
+					bottom = larger_16
+				),
+			) {
+				PadIconButton(
+					onClick = { onBackspace() },
+					enabled = timeStringLength > 0
+				)
+			}
 		}
 	}
 }
