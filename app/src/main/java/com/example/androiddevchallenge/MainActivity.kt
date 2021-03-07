@@ -24,18 +24,18 @@ import androidx.compose.runtime.mutableStateOf
 import com.example.androiddevchallenge.ui.view.MyApp
 
 class MainActivity : AppCompatActivity() {
-	
-	private val showFab: MutableState<Boolean> = mutableStateOf(false)
-	private val numPadVisibility: MutableState<Boolean> = mutableStateOf(true)
-	
-	@ExperimentalAnimationApi
-	override fun onCreate(savedInstanceState: Bundle?) {
-		super.onCreate(savedInstanceState)
-		setContent {
-			MyApp(
-				numPadVisibility = numPadVisibility,
-				fabVisibility = showFab
-			)
-		}
-	}
+
+    private val showFab: MutableState<Boolean> = mutableStateOf(false)
+    private val numPadVisibility: MutableState<Boolean> = mutableStateOf(true)
+
+    @ExperimentalAnimationApi
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            MyApp(
+                numPadVisibility = numPadVisibility,
+                fabVisibility = showFab
+            )
+        }
+    }
 }

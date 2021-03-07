@@ -24,16 +24,12 @@ val teal200 = Color(0xFF03DAC5)
 
 val backgroundColor = Color(0xFF181A25)
 
-
 val numPadColorNumber = Color(0xFFFFFFFF)
 
 val transparentColor = Color(0x00000000)
 val counterTextLightTheme = Color(0xFF333333)
 val counterTextDarkTheme = Color(0xFFAAAAAA)
 
-
 val backgroundColorLayer1 = Color(0xFF47A0D8)
 val backgroundColorLayer2 = Color(0xFF54BBD7)
 val backgroundColorLayer3 = Color(0xFF4CA6AC)
-
-
