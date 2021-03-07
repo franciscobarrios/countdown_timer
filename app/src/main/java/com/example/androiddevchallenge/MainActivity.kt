@@ -21,7 +21,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import com.example.androiddevchallenge.ui.theme.MyTheme
 import com.example.androiddevchallenge.ui.view.MyApp
 
 class MainActivity : AppCompatActivity() {
@@ -33,12 +32,10 @@ class MainActivity : AppCompatActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		setContent {
-			MyTheme {
-				MyApp(
-					numPadVisibility = numPadVisibility,
-					fabVisibility = showFab
-				)
-			}
+			MyApp(
+				numPadVisibility = numPadVisibility,
+				fabVisibility = showFab
+			)
 		}
 	}
 }
