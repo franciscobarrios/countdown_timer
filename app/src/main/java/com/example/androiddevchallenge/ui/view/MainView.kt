@@ -1,11 +1,11 @@
 package com.example.androiddevchallenge.ui.view
 
-import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -19,12 +19,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import com.example.androiddevchallenge.core.CountDown
+import com.example.androiddevchallenge.core.calculateNotFormatTime
 import com.example.androiddevchallenge.data.*
+import com.example.androiddevchallenge.ui.amin.DrawWave
 import com.example.androiddevchallenge.ui.theme.*
 
 @ExperimentalAnimationApi
@@ -58,16 +60,29 @@ fun MainView(
 	showFab: (Boolean) -> Unit,
 ) {
 	val counter = remember { mutableStateOf("") }
+	
+	
 	Column(
 		modifier = Modifier
 			.fillMaxSize()
-			.padding(12.dp)
+			.background(Color.Transparent)
 	) {
 		//Timer
 		Row(
 			modifier = Modifier
 				.fillMaxWidth()
-				.weight(0.5f),
+				.background(Color.Transparent)
+				.weight(
+					weight = if (showNumPad.value) 0.3f else 1f,
+					fill = true
+				)
+				.animateContentSize(
+					animationSpec = tween(
+						durationMillis = 300,
+						delayMillis = 100,
+						easing = LinearOutSlowInEasing
+					)
+				),
 			horizontalArrangement = Arrangement.Center,
 			verticalAlignment = Alignment.CenterVertically
 		) {
@@ -83,7 +98,18 @@ fun MainView(
 		Row(
 			modifier = Modifier
 				.fillMaxWidth()
-				.weight(1f),
+				.background(Color.Transparent)
+				.weight(
+					weight = (if (showNumPad.value) 0.7f else 0.01f),
+					fill = true
+				)
+				.animateContentSize(
+					animationSpec = tween(
+						durationMillis = 300,
+						delayMillis = 0,
+						easing = LinearOutSlowInEasing
+					)
+				),
 			horizontalArrangement = Arrangement.Center,
 		) {
 			NumPad(
@@ -100,159 +126,33 @@ fun MainView(
 				visible = showNumPad.value
 			)
 		}
-	}
-}
-
-@ExperimentalAnimationApi
-@Composable
-fun Fab(
-	fabVisibility: MutableState<Boolean>,
-	numPadVisibility: MutableState<Boolean>,
-	onClick: (Boolean) -> Unit
-) {
-	AnimatedVisibility(
-		visible = fabVisibility.value,
-		enter = expandIn(
-			expandFrom = Alignment.Center,
-			initialSize = {
-				IntSize(42, 42)
-			},
-			animationSpec = tween(120, easing = LinearOutSlowInEasing)
-		) + fadeIn(
-			initialAlpha = 0f,
-			animationSpec = tween(durationMillis = 50)
-		),
-		exit = shrinkOut(
-			shrinkTowards = Alignment.Center,
-			targetSize = { fullSize -> IntSize(fullSize.width, fullSize.height) },
-			animationSpec = tween(100, easing = FastOutSlowInEasing)
-		) + fadeOut(targetAlpha = 0.2f),
-		initiallyVisible = false,
-	) {
-		FloatingActionButton(
-			onClick = { onClick(!numPadVisibility.value) },
+		
+		Box(
+			modifier = Modifier
+				.background(Color.Transparent)
+				.weight(0.5f)
+				.alpha(1f), Alignment.BottomCenter
 		) {
-			Icon(
-				imageVector = Icons.Default.PlayArrow,
-				contentDescription = "Start timer",
-				tint = Color.White
-			)
+			DrawWave()
 		}
+		
 	}
 }
 
-@Composable
-fun TextNumberIndicator(text: String) {
-	Text(
-		text = text,
-		fontSize = textNumberIndicator,
-		textAlign = TextAlign.Center,
-		modifier = Modifier.padding(smaller_4),
-		color = if (isSystemInDarkTheme()) counterTextDarkTheme else counterTextLightTheme
-	)
-}
 
 @Composable
-fun TextNumberSeparator(text: String) {
-	Text(
-		text = text,
-		fontSize = textNumberSeparator,
-		textAlign = TextAlign.Center,
-		modifier = Modifier.padding(smaller_4),
-		color = if (isSystemInDarkTheme()) counterTextDarkTheme else counterTextLightTheme
-	)
-}
-
-@Composable
-fun IndicatorDescription(description: String) {
-	Text(
-		text = description,
-		fontSize = textTimeDescription
-	)
-}
-
-fun calculateNotFormatTime(time: String): CountDown {
-	try {
-		if (time != "") {
-			if (time.toInt() <= 356400 + 5940 + 99) { // <--- 99:99:99
-				
-				var seconds = 0
-				var hours = 0
-				var minutes = 0
-				
-				when (time.toInt()) {
-					in 0..99 -> {
-						seconds = time.toInt()
-					}
-					in 100..999 -> {
-						minutes = time.subSequence(0, 1).toString().toInt()
-						seconds = time.subSequence(1, 3).toString().toInt()
-					}
-					in 1000..9999 -> {
-						minutes = time.subSequence(0, 2).toString().toInt()
-						seconds = time.subSequence(2, 4).toString().toInt()
-					}
-					in 10000..99999 -> {
-						hours = time.subSequence(0, 1).toString().toInt()
-						minutes = time.subSequence(1, 3).toString().toInt()
-						seconds = time.subSequence(3, 5).toString().toInt()
-					}
-					in 100000..1000000 -> {
-						hours = time.subSequence(0, 2).toString().toInt()
-						minutes = time.subSequence(2, 4).toString().toInt()
-						seconds = time.subSequence(4, 6).toString().toInt()
-					}
-				}
-				
-				//Log.d(TAG, "hours: $hours, minutes: $minutes, seconds: $seconds ")
-				
-				val strHours: String = if (hours < 10) "0$hours" else hours.toString()
-				val strMinutes: String = if (minutes < 10) "0$minutes" else minutes.toString()
-				val strSeconds: String = if (seconds < 10) "0$seconds" else seconds.toString()
-				
-				return CountDown(
-					hours = strHours,
-					minutes = strMinutes,
-					seconds = strSeconds
-				)
+fun Background() {
+	Column {
+		Row(
+			modifier = Modifier
+				.fillMaxWidth()
+				.weight(0.5f)
+				.background(backgroundColorLayer1),
+			verticalAlignment = Alignment.Bottom,
+			content = {
+			
 			}
-			return CountDown()
-		}
-		return CountDown()
-	} catch (e: Exception) {
-		Log.e(TAG, "calculateTime: $e")
-		return CountDown()
-	}
-}
-
-fun formatTime(time: String): CountDown {
-	try {
-		if (time != "") {
-			if (time.toInt() < 362439) { // <--- 99:99:99
-				Log.d(TAG, "mainView: $time.toInt()")
-				val hours = time.toInt() / 3600
-				var remain = time.toInt() - hours * 3600
-				val minutes = remain / 60
-				remain -= minutes * 60
-				val seconds = remain
-				Log.d(TAG, "hours: $hours, minutes: $minutes, seconds: $seconds ")
-				
-				val strHours: String = if (hours < 10) "0$hours" else hours.toString()
-				val strMinutes: String = if (minutes < 10) "0$minutes" else minutes.toString()
-				val strSeconds: String = if (seconds < 10) "0$seconds" else seconds.toString()
-				
-				return CountDown(
-					hours = strHours,
-					minutes = strMinutes,
-					seconds = strSeconds
-				)
-			}
-			return CountDown()
-		}
-		return CountDown()
-	} catch (e: Exception) {
-		Log.e(TAG, "calculateTime: $e")
-		return CountDown()
+		)
 	}
 }
 
@@ -297,54 +197,6 @@ fun TimeIndicator(
 	}
 }
 
-@Composable
-fun PadButton(
-	text: String,
-	onClick: () -> Unit,
-	enabled: Boolean = true
-) {
-	OutlinedButton(
-		shape = CircleShape,
-		enabled = enabled,
-		onClick = onClick,
-		border = BorderStroke(0.dp, transparentColor)
-	) {
-		Text(
-			text = text,
-			modifier = Modifier.padding(large_12),
-			textAlign = TextAlign.Center,
-			fontSize = numPadSizeNumber,
-		)
-	}
-}
-
-@ExperimentalAnimationApi
-@Composable
-fun PadIconButton(
-	onClick: () -> Unit,
-	enabled: Boolean = false
-) {
-	AnimatedVisibility(
-		visible = enabled,
-		enter = fadeIn(5f),
-		exit = fadeOut(5f)
-	) {
-		IconButton(
-			onClick = onClick,
-			enabled = enabled
-		) {
-			Icon(
-				imageVector = Icons.Outlined.Backspace,
-				contentDescription = "Delete timer",
-				tint = if (enabled) {
-					if (isSystemInDarkTheme()) Color.White else Color.DarkGray
-				} else {
-					if (isSystemInDarkTheme()) Color.DarkGray else Color.LightGray
-				},
-			)
-		}
-	}
-}
 
 @ExperimentalAnimationApi
 @Composable
@@ -354,7 +206,77 @@ fun NumPad(
 	timeStringLength: Int,
 	visible: Boolean
 ) {
+	
 	if (visible) {
+		NumPadNumbers(
+			onClick = onClick,
+			onBackspace = onBackspace,
+			timeStringLength = timeStringLength
+		)
+	}
+	/*AnimatedVisibility(
+		visible = visible,
+		enter = slideInHorizontally(
+			initialOffsetX = { fullWidth -> -fullWidth },
+			animationSpec = tween(durationMillis = 200, easing = LinearOutSlowInEasing)
+		),
+		exit = slideOutHorizontally(
+			targetOffsetX = { fullWidth -> fullWidth },
+			animationSpec = spring(stiffness = Spring.StiffnessMedium)
+		),
+		initiallyVisible = true,
+	) {
+	
+	}*/
+}
+
+@ExperimentalAnimationApi
+@Composable
+fun Fab(
+	fabVisibility: MutableState<Boolean>,
+	numPadVisibility: MutableState<Boolean>,
+	onClick: (Boolean) -> Unit
+) {
+	AnimatedVisibility(
+		visible = fabVisibility.value,
+		enter = expandIn(
+			expandFrom = Alignment.Center,
+			initialSize = {
+				IntSize(42, 42)
+			},
+			animationSpec = tween(120, easing = LinearOutSlowInEasing)
+		) + fadeIn(
+			initialAlpha = 0f,
+			animationSpec = tween(durationMillis = 50)
+		),
+		exit = shrinkOut(
+			shrinkTowards = Alignment.Center,
+			targetSize = { fullSize -> IntSize(fullSize.width, fullSize.height) },
+			animationSpec = tween(100, easing = FastOutSlowInEasing)
+		) + fadeOut(targetAlpha = 0.2f),
+		initiallyVisible = false,
+	) {
+		FloatingActionButton(
+			onClick = { onClick(!numPadVisibility.value) },
+			modifier = Modifier.padding(12.dp)
+		) {
+			Icon(
+				imageVector = Icons.Default.PlayArrow,
+				contentDescription = "Start timer",
+				tint = Color.White
+			)
+		}
+	}
+}
+
+@ExperimentalAnimationApi
+@Composable
+fun NumPadNumbers(
+	onClick: (String) -> Unit,
+	onBackspace: () -> Unit,
+	timeStringLength: Int,
+) {
+	Row {
 		Column(modifier = Modifier.padding(medium_8)) {
 			Row(
 				modifier = Modifier.padding(
@@ -503,6 +425,91 @@ fun NumPad(
 					enabled = timeStringLength > 0
 				)
 			}
+		}
+	}
+}
+
+@Composable
+fun IndicatorDescription(description: String) {
+	Text(
+		text = description,
+		fontSize = textTimeDescription
+	)
+}
+
+@Composable
+fun TextNumberIndicator(text: String) {
+	Text(
+		text = text,
+		fontSize = textNumberIndicator,
+		textAlign = TextAlign.Center,
+		modifier = Modifier.padding(smaller_4),
+		color = if (isSystemInDarkTheme()) counterTextDarkTheme else counterTextLightTheme
+	)
+}
+
+@Composable
+fun TextNumberSeparator(text: String) {
+	Text(
+		text = text,
+		fontSize = textNumberSeparator,
+		textAlign = TextAlign.Center,
+		modifier = Modifier.padding(smaller_4),
+		color = if (isSystemInDarkTheme()) counterTextDarkTheme else counterTextLightTheme
+	)
+}
+
+@Composable
+fun PadButton(
+	text: String,
+	onClick: () -> Unit,
+	enabled: Boolean = true
+) {
+	OutlinedButton(
+		shape = CircleShape,
+		enabled = enabled,
+		onClick = onClick,
+		border = BorderStroke(
+			width = 0.dp,
+			color = Color.Transparent
+		),
+		modifier = Modifier.background(Color.Transparent)
+	) {
+		Text(
+			text = text,
+			modifier = Modifier
+				.padding(large_12)
+				.background(Color.Transparent),
+			textAlign = TextAlign.Center,
+			fontSize = numPadSizeNumber,
+		)
+	}
+}
+
+@ExperimentalAnimationApi
+@Composable
+fun PadIconButton(
+	onClick: () -> Unit,
+	enabled: Boolean = false
+) {
+	AnimatedVisibility(
+		visible = enabled,
+		enter = fadeIn(5f),
+		exit = fadeOut(5f)
+	) {
+		IconButton(
+			onClick = onClick,
+			enabled = enabled
+		) {
+			Icon(
+				imageVector = Icons.Outlined.Backspace,
+				contentDescription = "Delete timer",
+				tint = if (enabled) {
+					if (isSystemInDarkTheme()) Color.White else Color.DarkGray
+				} else {
+					if (isSystemInDarkTheme()) Color.DarkGray else Color.LightGray
+				},
+			)
 		}
 	}
 }
