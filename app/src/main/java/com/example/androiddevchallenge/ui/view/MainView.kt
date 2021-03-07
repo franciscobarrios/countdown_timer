@@ -15,6 +15,7 @@
  */
 package com.example.androiddevchallenge.ui.view
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
@@ -52,12 +53,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.example.androiddevchallenge.core.calculateNotFormatTime
+import com.example.androiddevchallenge.core.countDown
 import com.example.androiddevchallenge.data.NUM_PAD_0
 import com.example.androiddevchallenge.data.NUM_PAD_1
 import com.example.androiddevchallenge.data.NUM_PAD_2
@@ -68,6 +69,7 @@ import com.example.androiddevchallenge.data.NUM_PAD_6
 import com.example.androiddevchallenge.data.NUM_PAD_7
 import com.example.androiddevchallenge.data.NUM_PAD_8
 import com.example.androiddevchallenge.data.NUM_PAD_9
+import com.example.androiddevchallenge.data.TAG
 import com.example.androiddevchallenge.data.TIME_SEPARATOR
 import com.example.androiddevchallenge.ui.amin.DrawWave
 import com.example.androiddevchallenge.ui.theme.backgroundColorLayer1
@@ -98,7 +100,11 @@ fun MyApp(
         floatingActionButton = {
             Fab(
                 fabVisibility = fabVisibility,
-                onClick = { numPadVisibility.value = it },
+                onClick = {
+                    numPadVisibility.value = it
+                    val count = countDown(10000)
+                    Log.d(TAG, "count: $count.")
+                },
                 numPadVisibility = numPadVisibility,
             )
         },
@@ -180,11 +186,10 @@ fun MainView(
         Box(
             modifier = Modifier
                 .background(Color.Transparent)
-                .weight(0.5f)
-                .alpha(1f),
+                .weight(0.2f),
             Alignment.BottomCenter
         ) {
-            DrawWave()
+            DrawWave(-1f)
         }
     }
 }

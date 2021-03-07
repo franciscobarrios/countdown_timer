@@ -15,6 +15,7 @@
  */
 package com.example.androiddevchallenge.core
 
+import android.os.CountDownTimer
 import com.example.androiddevchallenge.data.NO_TIME
 
 data class CountDown(
@@ -22,3 +23,17 @@ data class CountDown(
     val minutes: String? = NO_TIME,
     val seconds: String? = NO_TIME,
 )
+
+fun countDown(time: Long): Long {
+    var timer: Long = 0
+
+    object : CountDownTimer(time, 1000) {
+        override fun onTick(millisUntilFinished: Long) {
+            timer = millisUntilFinished
+        }
+
+        override fun onFinish() {
+        }
+    }.start()
+    return timer
+}

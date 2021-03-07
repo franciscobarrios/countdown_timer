@@ -26,36 +26,78 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PointMode
+import com.example.androiddevchallenge.ui.theme.backgroundColorLayer1
+import com.example.androiddevchallenge.ui.theme.backgroundColorLayer2
+import com.example.androiddevchallenge.ui.theme.backgroundColorLayer3
+import com.example.androiddevchallenge.ui.theme.backgroundColorLayer4
 import kotlin.math.PI
 import kotlin.math.sin
 
 @Composable
-fun DrawWave() {
+fun DrawWave(height: Float) {
+
     val infiniteTransition = rememberInfiniteTransition()
-    val value by infiniteTransition.animateFloat(
+
+    val speed by infiniteTransition.animateFloat(
         initialValue = 0f,
-        targetValue = (2f * PI).toFloat(),
+        targetValue = (2 * PI).toFloat(),
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1000, easing = LinearEasing)
+            animation = tween(durationMillis = 4000, easing = LinearEasing)
         )
     )
 
     Canvas(
         modifier = Modifier.fillMaxSize(),
         onDraw = {
-            val points = mutableListOf<Offset>()
+            val halfHeight = size.height / 2
             for (x in 0 until size.width.toInt()) {
-                val y = (sin(x.toFloat()) * value)
-                points.add(Offset(x.toFloat(), y))
+                val y1 =
+                    (sin(-speed + x * (PI / size.width)) * halfHeight / 8 + height).toFloat()
+
+                val y2 =
+                    (sin(speed + x * (PI / size.width)) * halfHeight / 8 + 60 + height).toFloat()
+
+                val y3 =
+                    (sin(PI - speed + x * (PI / size.width)) * halfHeight / 8 + 120 + height).toFloat()
+
+                val y4 =
+                    (sin(PI + speed + x * (PI / size.width)) * halfHeight / 8 + 180 + height).toFloat()
+
+                drawLine(
+                    color = backgroundColorLayer1,
+                    start = Offset(x = x.toFloat(), y = size.height),
+                    end = Offset(x = x.toFloat(), y = y1),
+                    strokeWidth = 1f
+                )
+
+                drawLine(
+                    color = backgroundColorLayer2,
+                    start = Offset(x = x.toFloat(), y = size.height),
+                    end = Offset(x = x.toFloat(), y = y2),
+                    strokeWidth = 1f,
+                )
+
+                drawLine(
+                    color = backgroundColorLayer3,
+                    start = Offset(x = x.toFloat(), y = size.height),
+                    end = Offset(x = x.toFloat(), y = y3),
+                    strokeWidth = 1f,
+                )
+
+                drawLine(
+                    color = backgroundColorLayer4,
+                    start = Offset(x = x.toFloat(), y = size.height),
+                    end = Offset(x = x.toFloat(), y = y4),
+                    strokeWidth = 1f,
+                )
             }
-            drawPoints(
-                strokeWidth = 8f,
-                points = points,
-                pointMode = PointMode.Lines,
-                color = Color.Cyan
-            )
+
+            /*  drawPoints(
+                  strokeWidth = 8f,
+                  points = points1,
+                  pointMode = PointMode.Lines,
+                  color = Color.Cyan
+              )*/
         }
     )
 }
