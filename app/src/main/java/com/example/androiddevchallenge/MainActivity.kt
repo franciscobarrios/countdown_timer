@@ -16,27 +16,36 @@
 package com.example.androiddevchallenge
 
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import com.example.androiddevchallenge.ui.CountdownClockViewModel
 import com.example.androiddevchallenge.ui.theme.MyTheme
 import com.example.androiddevchallenge.ui.view.MyApp
+import kotlin.time.ExperimentalTime
 
 class MainActivity : AppCompatActivity() {
 
     private val showFab: MutableState<Boolean> = mutableStateOf(false)
     private val numPadVisibility: MutableState<Boolean> = mutableStateOf(true)
+    private val viewModel: CountdownClockViewModel by viewModels()
 
+    @ExperimentalTime
     @ExperimentalAnimationApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
         setContent {
             MyTheme {
                 MyApp(
+                    viewModel = viewModel,
                     numPadVisibility = numPadVisibility,
-                    fabVisibility = showFab
+                    fabVisibility = showFab,
                 )
             }
         }

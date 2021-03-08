@@ -15,7 +15,6 @@
  */
 package com.example.androiddevchallenge.ui.view
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
@@ -37,6 +36,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.FabPosition
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
@@ -45,10 +45,13 @@ import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.outlined.Backspace
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -58,7 +61,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.example.androiddevchallenge.core.calculateNotFormatTime
-import com.example.androiddevchallenge.core.countDown
+import com.example.androiddevchallenge.core.formatTime
+import com.example.androiddevchallenge.data.NO_TIME
 import com.example.androiddevchallenge.data.NUM_PAD_0
 import com.example.androiddevchallenge.data.NUM_PAD_1
 import com.example.androiddevchallenge.data.NUM_PAD_2
@@ -69,10 +73,11 @@ import com.example.androiddevchallenge.data.NUM_PAD_6
 import com.example.androiddevchallenge.data.NUM_PAD_7
 import com.example.androiddevchallenge.data.NUM_PAD_8
 import com.example.androiddevchallenge.data.NUM_PAD_9
-import com.example.androiddevchallenge.data.TAG
 import com.example.androiddevchallenge.data.TIME_SEPARATOR
+import com.example.androiddevchallenge.ui.CountdownClockViewModel
+import com.example.androiddevchallenge.ui.TimerState
 import com.example.androiddevchallenge.ui.amin.DrawWave
-import com.example.androiddevchallenge.ui.theme.backgroundColorLayer1
+import com.example.androiddevchallenge.ui.theme.backgroundColor
 import com.example.androiddevchallenge.ui.theme.counterTextDarkTheme
 import com.example.androiddevchallenge.ui.theme.counterTextLightTheme
 import com.example.androiddevchallenge.ui.theme.large_12
@@ -83,38 +88,68 @@ import com.example.androiddevchallenge.ui.theme.smaller_4
 import com.example.androiddevchallenge.ui.theme.textNumberIndicator
 import com.example.androiddevchallenge.ui.theme.textNumberSeparator
 import com.example.androiddevchallenge.ui.theme.textTimeDescription
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 @ExperimentalAnimationApi
 @Composable
 fun MyApp(
+    viewModel: CountdownClockViewModel,
     numPadVisibility: MutableState<Boolean>,
     fabVisibility: MutableState<Boolean>,
 ) {
     Scaffold(
         content = {
             MainView(
+                viewModel = viewModel,
                 showFab = { fabVisibility.value = it },
                 showNumPad = numPadVisibility,
             )
         },
         floatingActionButton = {
-            Fab(
-                fabVisibility = fabVisibility,
-                onClick = {
-                    numPadVisibility.value = it
-                    val count = countDown(10000)
-                    Log.d(TAG, "count: $count.")
-                },
-                numPadVisibility = numPadVisibility,
-            )
+            viewModel.observeTimerState().observeAsState().value.let { state ->
+                when (state) {
+                    TimerState.IDLE -> {
+                        Fab(
+                            fabVisibility = fabVisibility,
+                            onClick = {
+                                fabVisibility.value
+                                numPadVisibility.value = it
+                                viewModel.startTimer()
+                            },
+                            numPadVisibility = numPadVisibility,
+                        )
+                    }
+                    TimerState.RUNNING -> {
+                        FabStop(onClick = { viewModel.pauseTimer() })
+                    }
+                    TimerState.PAUSED -> {
+                        FabContinue(
+                            onClick = {
+                                viewModel.continueTimer()
+                            }
+                        )
+                    }
+                    TimerState.FINISHED -> {
+                        Fab(
+                            fabVisibility = fabVisibility,
+                            onClick = {},
+                            numPadVisibility = mutableStateOf(true),
+                        )
+                    }
+                }
+            }
         },
         floatingActionButtonPosition = FabPosition.Center,
+        backgroundColor = backgroundColor
     )
 }
 
+@ExperimentalTime
 @ExperimentalAnimationApi
 @Composable
 fun MainView(
+    viewModel: CountdownClockViewModel,
     showNumPad: MutableState<Boolean>,
     showFab: (Boolean) -> Unit,
 ) {
@@ -143,13 +178,27 @@ fun MainView(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val time = calculateNotFormatTime(counter.value)
             showFab(counter.value.isNotEmpty())
-            TimeIndicator(
-                hours = time.hours,
-                minutes = time.minutes,
-                seconds = time.seconds
-            )
+
+            val time = calculateNotFormatTime(counter.value)
+            viewModel.setCountDownTimer(time = time)
+
+            viewModel.observeTimer().observeAsState().value.let {
+                val countDown = it?.let { it1 -> formatTime(it1) }
+                if (it != null) {
+                    TimeIndicator(
+                        hours = countDown?.hours,
+                        minutes = countDown?.minutes,
+                        seconds = countDown?.seconds
+                    )
+                } else {
+                    TimeIndicator(
+                        hours = time.hours,
+                        minutes = time.minutes,
+                        seconds = time.seconds
+                    )
+                }
+            }
         }
         Row(
             modifier = Modifier
@@ -169,9 +218,7 @@ fun MainView(
             horizontalArrangement = Arrangement.Center,
         ) {
             NumPad(
-                onClick = {
-                    counter.value += it
-                },
+                onClick = { counter.value += it },
                 onBackspace = {
                     if (counter.value.isNotEmpty()) {
                         counter.value =
@@ -182,30 +229,18 @@ fun MainView(
                 visible = showNumPad.value
             )
         }
-
         Box(
             modifier = Modifier
                 .background(Color.Transparent)
                 .weight(0.2f),
             Alignment.BottomCenter
         ) {
-            DrawWave(-1f)
-        }
-    }
-}
-
-@Composable
-fun Background() {
-    Column {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(0.5f)
-                .background(backgroundColorLayer1),
-            verticalAlignment = Alignment.Bottom,
-            content = {
+            viewModel.observeTimerState().observeAsState().value.let { state ->
+                if (state == TimerState.RUNNING) {
+                    DrawWave()
+                }
             }
-        )
+        }
     }
 }
 
@@ -213,13 +248,13 @@ fun Background() {
 fun TimeIndicator(
     hours: String?,
     minutes: String?,
-    seconds: String?
+    seconds: String?,
 ) {
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        hours?.let { TextNumberIndicator(text = it) }
+        TextNumberIndicator(text = hours ?: NO_TIME)
         IndicatorDescription("hours")
     }
     Column(
@@ -232,7 +267,7 @@ fun TimeIndicator(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        minutes?.let { TextNumberIndicator(text = it) }
+        TextNumberIndicator(text = minutes ?: NO_TIME)
         IndicatorDescription("minutes")
     }
     Column(
@@ -245,7 +280,7 @@ fun TimeIndicator(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        seconds?.let { TextNumberIndicator(text = it) }
+        TextNumberIndicator(text = seconds ?: NO_TIME)
         IndicatorDescription("seconds")
     }
 }
@@ -258,7 +293,6 @@ fun NumPad(
     timeStringLength: Int,
     visible: Boolean
 ) {
-
     if (visible) {
         NumPadNumbers(
             onClick = onClick,
@@ -266,6 +300,7 @@ fun NumPad(
             timeStringLength = timeStringLength
         )
     }
+
     /*AnimatedVisibility(
         visible = visible,
         enter = slideInHorizontally(
@@ -280,6 +315,38 @@ fun NumPad(
     ) {
 
     }*/
+}
+
+@Composable
+fun FabStop(
+    onClick: () -> Unit
+) {
+    FloatingActionButton(
+        onClick = onClick,
+        modifier = Modifier.padding(12.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Default.Pause,
+            contentDescription = "Stop timer",
+            tint = Color.White
+        )
+    }
+}
+
+@Composable
+fun FabContinue(
+    onClick: () -> Unit
+) {
+    FloatingActionButton(
+        onClick = onClick,
+        modifier = Modifier.padding(12.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Default.Restore,
+            contentDescription = "Continue timer",
+            tint = Color.White
+        )
+    }
 }
 
 @ExperimentalAnimationApi
@@ -518,6 +585,10 @@ fun PadButton(
     enabled: Boolean = true
 ) {
     OutlinedButton(
+        colors = ButtonDefaults.buttonColors(
+            backgroundColor = backgroundColor,
+            contentColor = Color.White
+        ),
         shape = CircleShape,
         enabled = enabled,
         onClick = onClick,
@@ -525,7 +596,7 @@ fun PadButton(
             width = 0.dp,
             color = Color.Transparent
         ),
-        modifier = Modifier.background(Color.Transparent)
+        modifier = Modifier.background(Color.Transparent),
     ) {
         Text(
             text = text,

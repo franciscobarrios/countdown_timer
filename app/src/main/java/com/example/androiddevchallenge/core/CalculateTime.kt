@@ -15,17 +15,12 @@
  */
 package com.example.androiddevchallenge.core
 
-import android.util.Log
-import com.example.androiddevchallenge.data.TAG
-
 fun calculateNotFormatTime(time: String): CountDown {
     if (time != "") {
         if (time.toInt() <= 356400 + 5940 + 99) { // <--- 99:99:99
-
             var seconds = 0
             var hours = 0
             var minutes = 0
-
             when (time.toInt()) {
                 in 0..99 -> {
                     seconds = time.toInt()
@@ -49,9 +44,6 @@ fun calculateNotFormatTime(time: String): CountDown {
                     seconds = time.subSequence(4, 6).toString().toInt()
                 }
             }
-
-            // Log.d(TAG, "hours: $hours, minutes: $minutes, seconds: $seconds ")
-
             val strHours: String = if (hours < 10) "0$hours" else hours.toString()
             val strMinutes: String = if (minutes < 10) "0$minutes" else minutes.toString()
             val strSeconds: String = if (seconds < 10) "0$seconds" else seconds.toString()
@@ -67,33 +59,24 @@ fun calculateNotFormatTime(time: String): CountDown {
     return CountDown()
 }
 
-fun formatTime(time: String): CountDown {
-    try {
-        if (time != "") {
-            if (time.toInt() < 362439) { // <--- 99:99:99
-                Log.d(TAG, "mainView: $time.toInt()")
-                val hours = time.toInt() / 3600
-                var remain = time.toInt() - hours * 3600
-                val minutes = remain / 60
-                remain -= minutes * 60
-                val seconds = remain
-                Log.d(TAG, "hours: $hours, minutes: $minutes, seconds: $seconds ")
+fun formatTime(time: Long): CountDown {
+    if (time < 356400000) { // <--- 99:99:99
+        val hours = time / 3600000
+        var remain = time - hours * 3600000
+        val minutes = remain / 60000
+        remain -= minutes * 60000
+        val seconds = remain / 1000
 
-                val strHours: String = if (hours < 10) "0$hours" else hours.toString()
-                val strMinutes: String = if (minutes < 10) "0$minutes" else minutes.toString()
-                val strSeconds: String = if (seconds < 10) "0$seconds" else seconds.toString()
+        val strHours: String = if (hours < 10) "0$hours" else hours.toString()
+        val strMinutes: String = if (minutes < 10) "0$minutes" else minutes.toString()
+        val strSeconds: String = if (seconds < 10) "0$seconds" else seconds.toString()
 
-                return CountDown(
-                    hours = strHours,
-                    minutes = strMinutes,
-                    seconds = strSeconds
-                )
-            }
-            return CountDown()
-        }
-        return CountDown()
-    } catch (e: Exception) {
-        Log.e(TAG, "calculateTime: $e")
+        return CountDown(
+            hours = strHours,
+            minutes = strMinutes,
+            seconds = strSeconds
+        )
+    } else {
         return CountDown()
     }
 }

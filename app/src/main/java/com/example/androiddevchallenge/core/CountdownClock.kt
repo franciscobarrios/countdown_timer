@@ -15,25 +15,8 @@
  */
 package com.example.androiddevchallenge.core
 
-import android.os.CountDownTimer
-import com.example.androiddevchallenge.data.NO_TIME
-
 data class CountDown(
-    val hours: String? = NO_TIME,
-    val minutes: String? = NO_TIME,
-    val seconds: String? = NO_TIME,
+    val hours: String = "00",
+    val minutes: String = "00",
+    val seconds: String = "00",
 )
-
-fun countDown(time: Long): Long {
-    var timer: Long = 0
-
-    object : CountDownTimer(time, 1000) {
-        override fun onTick(millisUntilFinished: Long) {
-            timer = millisUntilFinished
-        }
-
-        override fun onFinish() {
-        }
-    }.start()
-    return timer
-}

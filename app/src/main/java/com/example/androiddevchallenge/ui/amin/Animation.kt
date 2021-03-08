@@ -32,9 +32,11 @@ import com.example.androiddevchallenge.ui.theme.backgroundColorLayer3
 import com.example.androiddevchallenge.ui.theme.backgroundColorLayer4
 import kotlin.math.PI
 import kotlin.math.sin
+import kotlin.time.ExperimentalTime
 
+@ExperimentalTime
 @Composable
-fun DrawWave(height: Float) {
+fun DrawWave() {
 
     val infiniteTransition = rememberInfiniteTransition()
 
@@ -50,23 +52,25 @@ fun DrawWave(height: Float) {
         modifier = Modifier.fillMaxSize(),
         onDraw = {
             val halfHeight = size.height / 2
+
             for (x in 0 until size.width.toInt()) {
+
                 val y1 =
-                    (sin(-speed + x * (PI / size.width)) * halfHeight / 8 + height).toFloat()
+                    (sin(-speed + x * (PI / size.width)) * halfHeight / 8 + halfHeight).toFloat()
 
                 val y2 =
-                    (sin(speed + x * (PI / size.width)) * halfHeight / 8 + 60 + height).toFloat()
+                    (sin(speed + x * (PI / size.width)) * halfHeight / 8 + 60 + halfHeight).toFloat()
 
                 val y3 =
-                    (sin(PI - speed + x * (PI / size.width)) * halfHeight / 8 + 120 + height).toFloat()
+                    (sin(PI - speed + x * (PI / size.width)) * halfHeight / 8 + 120 + halfHeight).toFloat()
 
                 val y4 =
-                    (sin(PI + speed + x * (PI / size.width)) * halfHeight / 8 + 180 + height).toFloat()
+                    (sin(PI + speed + x * (PI / size.width)) * halfHeight / 8 + 180 + halfHeight).toFloat()
 
                 drawLine(
                     color = backgroundColorLayer1,
-                    start = Offset(x = x.toFloat(), y = size.height),
                     end = Offset(x = x.toFloat(), y = y1),
+                    start = Offset(x = x.toFloat(), y = size.height),
                     strokeWidth = 1f
                 )
 
